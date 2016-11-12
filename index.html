@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<canvas width="800" height="600" id="cvs"></canvas>
+<script src="loadImages.js"></script>
+<script src="rect.js"></script>
+<script src="bird.js"></script>
+<script src="sky.js"></script>
+<script src="land.js"></script>
+<script src="pipe.js"></script>
+<script>
+    var cvs = document.getElementById('cvs');
+    var ctx = cvs.getContext('2d');
+    var imgUrls = [
+        {name: 'birds', path: './res/birds.png'},
+        {name: 'land', path: './res/land.png'},
+        {name: 'pipe1', path: './res/pipe1.png'},
+        {name: 'pipe2', path: './res/pipe2.png'},
+        {name: 'sky', path: './res/sky.png'}
+    ];
+    loadImages(imgUrls, function (imgEls) {
+        var gameOver = false; // 记录游戏是不是结束
+
+        // 主逻辑：分为两部分
+        //      1. 创建对象
+        // TODO: 创建小鸟的对象
+        var bird = new Bird(150, 150, imgEls.birds, 0, 0.0005);
+        cvs.addEventListener('click', function () {
+            bird.speed = -0.3; // 鼠标点击之后上飞，给了一个向上的速度
+        });
+
+        var sky1 = new Sky(0, -0.1, imgEls['sky'], ctx);
+        var sky2 = new Sky(800, -0.1, imgEls['sky'], ctx);
+        sky1.setCount(2);
+
+        var land1 = new Land(0, -0.15, imgEls['land'], ctx);
+        var land2 = new Land(336, -0.15, imgEls['land'], ctx);
+        var land3 = new Land(672, -0.15, imgEls['land'], ctx);
+        var land4 = new Land(1008, -0.15, imgEls['land'], ctx);
+        land1.setCount(4);
+
+        var pipe1 = new Pipe(0 + 400, -0.15, imgEls['pipe2'], imgEls['pipe1'], ctx);
+        var pipe2 = new Pipe(200 + 400, -0.15, imgEls['pipe2'], imgEls['pipe1'], ctx);
+        var pipe3 = new Pipe(400 + 400, -0.15, imgEls['pipe2'], imgEls['pipe1'], ctx);
+        var pipe4 = new Pipe(600 + 400, -0.15, imgEls['pipe2'], imgEls['pipe1'], ctx);
+        var pipe5 = new Pipe(800 + 400, -0.15, imgEls['pipe2'], imgEls['pipe1'], ctx);
+        pipe4.setGapAndCount(200, 5); // 设置两个管子之间的间隙和所有管子的个数
+//        sky2.setCount(2);  // 我随便用哪个小sky去调用setCount都是可以的
+
+        // ---------------------------------------------
+        //      2. 主循环
+        // 取间隔时间
+        var lastTime = Date.now();
+        // 同样是延迟执行，但是延迟的时间由浏览器来决定：浏览器会尽量让这个延迟时间符合流畅的动画的标准
+        var looper = function () {
+            var now = Date.now();
+            var dt = now - lastTime; // 间隔时间
+            lastTime = now;
+
+            ctx.clearRect(0, 0, 800, 600); // 每帧开始都要把上一帧的图像擦除
+
+            // TODO：调用小鸟的update和draw函数，让小鸟动起来
+            sky1.update(dt);
+            sky2.update(dt);
+            sky1.draw();
+            sky2.draw();
+            land1.update(dt);
+            land2.update(dt);
+            land3.update(dt);
+            land4.update(dt);
+            pipe1.update(dt);
+            pipe2.update(dt);
+            pipe3.update(dt);
+            pipe4.update(dt);
+            pipe5.update(dt);
+            pipe1.draw();
+            pipe2.draw();
+            pipe3.draw();
+            pipe4.draw();
+            pipe5.draw();
+            land1.draw();
+            land2.draw();
+            land3.draw();
+            land4.draw();
+            bird.update(dt);
+            bird.draw();
+
+
+            // ---------------------------------------------
+
+
+            // 判断游戏是否结束
+            if (bird.y > 488 - 45 / 2 || bird.y < 0 - 45 / 2) {
+                gameOver = true;
+            }
+            gameOver = gameOver || pipe1.hitTest(bird.x, bird.y);
+            gameOver = gameOver || pipe2.hitTest(bird.x, bird.y);
+            gameOver = gameOver || pipe3.hitTest(bird.x, bird.y);
+            gameOver = gameOver || pipe4.hitTest(bird.x, bird.y);
+            gameOver = gameOver || pipe5.hitTest(bird.x, bird.y);
+
+
+            // 我们需要这个函数被反复的执行
+            if (!gameOver) { // 如果游戏结束标签为false，才绘制下一帧
+                requestAnimationFrame(looper); // 这个函数执行到最后：会再次延迟执行自身
+            }
+        };
+        requestAnimationFrame(looper)
+
+    })
+
+
+</script>
+</body>
+</html>
