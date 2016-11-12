@@ -1,4 +1,5 @@
 // 矩形的构造函数
+// 我将会做一个远程的操作
 function Rect(x, y, w, h, sColor, lineWidth, fColor,speed) {
     this.x = x;
     this.y = y;
